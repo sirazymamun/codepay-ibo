@@ -3,7 +3,7 @@ on:
   workflow_dispatch:
   push:
     branches: [main, master]
-    paths: [API-URL.txt, tools/configure_api.py, source.zip, apk-version.txt, .github/workflows/app-debug.yml, 'Signing/**']
+    paths: [API-URL.txt, tools/configure_api.py, tools/gradle-retry.sh, source.zip, apk-version.txt, .github/workflows/app-debug.yml, 'Signing/**']
 permissions:
   contents: read
   actions: read
@@ -77,6 +77,7 @@ jobs:
         with:
           distribution: temurin
           java-version: '21'
+      - uses: gradle/actions/setup-gradle@v4
       - uses: android-actions/setup-android@v4
         with:
           packages: 'platform-tools'
@@ -135,7 +136,7 @@ jobs:
         working-directory: build-source/android
         run: |
           chmod +x gradlew
-          ./gradlew :app:assembleDebug :app:lintDebug --no-daemon
+          bash "$GITHUB_WORKSPACE/tools/gradle-retry.sh" :app:assembleDebug :app:lintDebug --no-daemon
       - name: Save lint diagnostics
         if: always()
         uses: actions/upload-artifact@v6
@@ -162,7 +163,7 @@ jobs:
           if-no-files-found: error
       - name: Build internal emulator test APKs
         working-directory: build-source/android
-        run: ./gradlew :app:assembleDebug :app:assembleDebugAndroidTest -PactiveCodeEmulator=true --no-daemon
+        run: bash "$GITHUB_WORKSPACE/tools/gradle-retry.sh" :app:assembleDebug :app:assembleDebugAndroidTest -PactiveCodeEmulator=true --no-daemon
       - name: Collect internal emulator artifacts
         env:
           APK_LABEL: ${{ steps.version.outputs.label }}

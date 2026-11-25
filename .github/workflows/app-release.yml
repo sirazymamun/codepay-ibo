@@ -74,6 +74,7 @@ jobs:
         with:
           distribution: temurin
           java-version: '21'
+      - uses: gradle/actions/setup-gradle@v4
       - uses: android-actions/setup-android@v4
         with:
           packages: 'platform-tools'
@@ -137,7 +138,7 @@ jobs:
           ACTIVE_CODE_KEY_PASSWORD: ${{ secrets.ACTIVE_CODE_KEY_PASSWORD }}
         run: |
           chmod +x gradlew
-          ./gradlew :app:assembleRelease :app:bundleRelease :app:lintRelease --no-daemon
+          bash "$GITHUB_WORKSPACE/tools/gradle-retry.sh" :app:assembleRelease :app:bundleRelease :app:lintRelease --no-daemon
       - name: Save lint diagnostics
         if: always()
         uses: actions/upload-artifact@v6
