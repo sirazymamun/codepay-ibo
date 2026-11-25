@@ -6,7 +6,7 @@ from urllib.parse import urlsplit
 root = Path(__file__).resolve().parent.parent
 url = (root / 'API-URL.txt').read_text(encoding='utf-8-sig').strip()
 parts = urlsplit(url)
-if (parts.scheme != 'https' or not parts.hostname or parts.path != '/activation/api.php'
+if (parts.scheme != 'https' or not parts.hostname or not parts.path.endswith('/api.php') or any(seg in ('', '.', '..') for seg in parts.path[1:].split('/'))
     or parts.username or parts.password or parts.query or parts.fragment
     or any(c not in 'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789:/.-[]' for c in url)
     or 'YOUR_DOMAIN' in url or '_' in parts.hostname):
