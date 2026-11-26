@@ -161,6 +161,11 @@ jobs:
           name: ${{ steps.version.outputs.label }}-debug
           path: artifacts/*
           if-no-files-found: error
+      - name: Generate SD HD FHD UHD and HEVC demo clips
+        working-directory: build-source
+        run: |
+          command -v ffmpeg >/dev/null || (sudo apt-get update && sudo apt-get install -y ffmpeg)
+          python3 tools/make_demo_video.py android/app/src/androidTest/assets/demo
       - name: Build internal emulator test APKs
         working-directory: build-source/android
         run: bash "$GITHUB_WORKSPACE/tools/gradle-retry.sh" :app:assembleDebug :app:assembleDebugAndroidTest -PactiveCodeEmulator=true --no-daemon
@@ -180,7 +185,7 @@ jobs:
   android-smoke:
     needs: build
     runs-on: ubuntu-24.04
-    timeout-minutes: 35
+    timeout-minutes: 55
     strategy:
       fail-fast: false
       matrix:
