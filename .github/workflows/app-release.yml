@@ -11,6 +11,26 @@ jobs:
       label: ${{ steps.version.outputs.label }}
     steps:
       - uses: actions/checkout@v5
+      - name: Apply mobile update bundle
+        shell: bash
+        run: |
+          python3 - <<'PYUPDATE'
+          import pathlib, zipfile, stat
+          p = pathlib.Path('update.zip')
+          if p.exists():
+              allowed = {'source.zip', 'apk-version.txt', 'tools/configure_api.py', 'tools/gradle-retry.sh'}
+              with zipfile.ZipFile(p) as z:
+                  names = z.namelist()
+                  if len(names) != len(set(names)) or not set(names) <= allowed or 'source.zip' not in names:
+                      raise SystemExit('Invalid update bundle paths')
+                  if any(stat.S_ISLNK(i.external_attr >> 16) for i in z.infolist()) or z.testzip() is not None:
+                      raise SystemExit('Invalid update bundle integrity')
+                  for name in names:
+                      dest = pathlib.Path(name)
+                      dest.parent.mkdir(parents=True, exist_ok=True)
+                      dest.write_bytes(z.read(name))
+              print('Applied update.zip to build workspace')
+          PYUPDATE
       - name: Extract source and set version
         id: version
         shell: bash
