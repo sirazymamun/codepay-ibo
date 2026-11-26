@@ -266,7 +266,8 @@ jobs:
           path: |
             artifacts/avd-api-*.txt
             artifacts/emulator-api-*.log
-            artifacts/instrumentation-api-*.txt
+            artifacts/instrumentation-*.txt
+            artifacts/demo-*.png
             artifacts/failure-api-*.txt
             artifacts/failure-preparation-api-*.txt
             artifacts/sdk-install-*.txt
